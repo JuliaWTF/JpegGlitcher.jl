@@ -3,6 +3,8 @@ module JpegGlitcher
 using JpegTurbo
 using Random: AbstractRNG, default_rng
 
+export glitch
+
 # Relevant link for markers  :https://en.wikipedia.org/wiki/JPEG#Syntax_and_structure
 const NOPAYLOAD = [0x00, 0xD8, (0xD0:0xD7)..., 0xD9]
 
@@ -35,7 +37,7 @@ function glitch(
     0 < quality <= 100 || error("quality should be between 1 and 100.")
     n > 0 || error("number `n` should be positive.")
     # Encode the image into a Vector{UInt8}
-    data = jpeg_encode(img, quality)
+    data = jpeg_encode(img; quality)
     # The bytes that are not markers and can be modified.
     mutable_bytes = sizehint!(Int[], length(data) ÷ 100) # We assume at least 1% of the bits will be markers.
     # Iterate over the bytes.
@@ -61,7 +63,7 @@ function glitch(
     end
     # Once we completed the list of safe bytes to modify, we get to work!
     for i = 1:n
-        loc = rand(rng, valid) # Select a random byte.
+        loc = rand(rng, mutable_bytes) # Select a random byte.
         data[loc] = rand(rng, 0x00:0xfe) # We pick a new random byte (except 0xff).
     end
     # Finally disencode the data.
