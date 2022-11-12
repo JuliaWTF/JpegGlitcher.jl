@@ -1,7 +1,7 @@
 name = "JpegGlitcher"
 uuid = "7e1ea31b-b9a5-4cc0-940e-7c5f7cd080d6"
 authors = ["Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors"]
-version = "0.1.0"
+version = "1.0.0"
 
 [deps]
 JpegTurbo = "b835a17e-a41a-41e7-81f0-2f016b05efe0"
