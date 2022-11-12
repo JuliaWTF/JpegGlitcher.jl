@@ -2,11 +2,11 @@
 
 It's glitching time!
 
-`JpegGlitcher` offers uniquely the `glitch` function.
-`glitch` will take an image, compress it using the JPEG encoding, safely modify some
-bytes of the compressed version and return the disencoded version.
+`JpegGlitcher` only exports the `glitch` function.
+`glitch` takes an image, compresses it using the JPEG encoding, safely modifies
+some bytes of the compressed version and return the decoded version.
 
-Here is an example, showing the evolution over time:
+Here is a basic example, using the default parameters.
 
 ```julia
 using JpegGlitcher
@@ -18,7 +18,7 @@ glitch(img)
 
 ![Glitched version of the Mountain View image](assets/glitched.png)
 
-We can also make an animation!
+We can also make an animation, playing with the different parameters!
 
 ```julia
 cat([glitch(img; rng = Random.Xoshiro(42), n = i, quality = 20) for i in 1:50]...; dims=3)
