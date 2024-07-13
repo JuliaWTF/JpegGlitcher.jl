@@ -12,7 +12,7 @@ Here is a basic example, using the default parameters.
 using JpegGlitcher
 using RandomFileIO, TestImages
 
-img = testimage("mountainview")
+img = testimage("mountainstream")
 glitch(img)
 ```
 

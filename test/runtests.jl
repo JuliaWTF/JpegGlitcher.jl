@@ -6,7 +6,7 @@ using ImageIO, FileIO
 
 @testset "JpegGlitcher.jl" begin
     # Test Gray images
-    for img_name in ("cameraman", "mountainview")
+    for img_name in ("cameraman", "mountainstream")
         @testset "$img_name" begin
             img = testimage(img_name)
             # test alg runs fine
