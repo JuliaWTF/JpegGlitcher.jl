@@ -27,8 +27,17 @@ using ImageIO, FileIO
         assets = joinpath(pkgdir(JpegGlitcher), "assets")
         file_in = joinpath(assets, "glitched.png")
         file_out = joinpath(pkgdir(JpegGlitcher), "test", "test_out.png")
-        glitch(file_in, file_out)
-        @test isfile(file_out)
-        @test load(file_out) isa Matrix{<:RGB}
+        file_out_auto = joinpath(assets, "glitched_glitched.png")
+        try
+            glitch(file_in, file_out)
+            @test isfile(file_out)
+            @test load(file_out) isa Matrix
+            glitch(file_in)
+            @test isfile(file_out_auto)
+            @test load(file_out_auto) isa Matrix
+        finally
+            isfile(file_out) && rm(file_out)
+            isfile(file_out_auto) && rm(file_out_auto)
+        end
     end
 end

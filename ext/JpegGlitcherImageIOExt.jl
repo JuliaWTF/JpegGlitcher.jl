@@ -6,14 +6,15 @@ using JpegGlitcher
 using Random: AbstractRNG, default_rng
 
 """
-    glitch(file_in::AbstractString, file_out::AbstractString; rng::AbstractRNG=default_rng(), nflips::Integer=10, quality::Integer=100)
+    glitch(file_in::AbstractString, file_out::AbstractString = auto_glitch_name(file_in); rng::AbstractRNG=default_rng(), nflips::Integer=10, quality::Integer=100)
 
 Glitch image from `file_in` and write the output in `file_out`.
 See other method signature for keyword usage.
+    
 """
 function JpegGlitcher.glitch(
     file_in::AbstractString,
-    file_out::AbstractString;
+    file_out::AbstractString=auto_glitch_name(file_in);
     rng::AbstractRNG=default_rng(),
     n::Integer=10,
     quality::Integer=100,
@@ -21,6 +22,12 @@ function JpegGlitcher.glitch(
     img = FileIO.load(file_in)
     glitched_img = glitch(img; rng, n, quality)
     FileIO.save(file_out, glitched_img)
+end
+
+"Automatically append `_glitched` to the original file name."
+function auto_glitch_name(path::String)
+    path, ext = splitext(path)
+    string(path, "_glitched", ext)
 end
 
 end
