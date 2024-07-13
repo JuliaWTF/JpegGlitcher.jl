@@ -70,10 +70,4 @@ function glitch(
     jpeg_decode(data)
 end
 
-function glitch_append(path::AbstractString)
-    split_path()
-
-end
-
-
 end
