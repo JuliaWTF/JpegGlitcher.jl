@@ -17,7 +17,7 @@ Within the entropy-coded data, after any 0xFF byte, a 0x00 byte is inserted by t
 =#
 
 """
-    glitch(img; rng::AbstractRNG=default_rng(), nflips::Integer=10, quality::Integer=100)
+    glitch(img::AbstractMatrix; rng::AbstractRNG=default_rng(), nflips::Integer=10, quality::Integer=100)
 
 `glitch` will turn an image into a compressed JPEG format with JPEGTurbo.jl and
 randomly change some bytes (safe to change) of the encoded image.
@@ -29,10 +29,10 @@ randomly change some bytes (safe to change) of the encoded image.
 - `quality::Integer`: the encoding quality of the JPEG (lower gives worse quality).
 """
 function glitch(
-    img;
-    rng::AbstractRNG = default_rng(),
-    n::Integer = 10,
-    quality::Integer = 100,
+    img::AbstractMatrix;
+    rng::AbstractRNG=default_rng(),
+    n::Integer=10,
+    quality::Integer=100,
 )
     0 < quality <= 100 || error("quality should be between 1 and 100.")
     n > 0 || error("number `n` should be positive.")
@@ -53,7 +53,7 @@ function glitch(
             elseif data[i] ∈ WITH_VARSIZE # The next two bytes indicate the size
                 # of the data contained by the marker.
                 high_byte, low_byte = data[i+1:i+2]
-                size = parse(UInt16, bitstring(high_byte) * bitstring(low_byte); base = 2)
+                size = parse(UInt16, bitstring(high_byte) * bitstring(low_byte); base=2)
                 i += size
             end
         else
@@ -69,5 +69,11 @@ function glitch(
     # Finally disencode the data.
     jpeg_decode(data)
 end
+
+function glitch_append(path::AbstractString)
+    split_path()
+
+end
+
 
 end

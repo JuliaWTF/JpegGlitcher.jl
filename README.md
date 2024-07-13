@@ -10,7 +10,7 @@ Here is a basic example, using the default parameters.
 
 ```julia
 using JpegGlitcher
-using Random, FileIO, TestImages
+using RandomFileIO, TestImages
 
 img = testimage("mountainview")
 glitch(img)
@@ -25,3 +25,15 @@ cat([glitch(img; rng = Random.Xoshiro(42), n = i, quality = 20) for i in 1:50]..
 ```
 
 ![Low quality animated glitching](assets/glitched_anim.gif)
+
+## Glitch file
+
+You can also directly glitch a file by loading `FileIO.jl` and `ImageIO.jl`.
+
+```julia
+using JpegGlitcher, FileIO, ImageIO
+
+glitch("my_beautiful_img.png", "my_glitched_img.png")
+```
+
+The glitching will work on any image format supported by `ImageIO`.
