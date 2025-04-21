@@ -28,10 +28,10 @@ cat([glitch(img; rng = Random.Xoshiro(42), n = i, quality = 20) for i in 1:50]..
 
 ## Glitch file
 
-You can also directly glitch a file by loading `FileIO.jl` and `ImageIO.jl`.
+You can also directly glitch a file:
 
 ```julia
-using JpegGlitcher, FileIO, ImageIO
+using JpegGlitcher
 
 glitch("my_beautiful_img.png", "my_glitched_img.png")
 ```

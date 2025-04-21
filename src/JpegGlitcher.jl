@@ -2,6 +2,9 @@ module JpegGlitcher
 
 using JpegTurbo
 using Random: AbstractRNG, default_rng
+using PrecompileTools: @setup_workload, @compile_workload
+using ImageIO
+using FileIO
 
 export glitch
 
@@ -67,7 +70,44 @@ function glitch(
         data[loc] = rand(rng, 0x00:0xfe) # We pick a new random byte (except 0xff).
     end
     # Finally disencode the data.
-    jpeg_decode(data)
+    redirect_stderr(devnull) do
+        jpeg_decode(data)
+    end
+end
+
+
+"""
+    glitch(file_in::AbstractString, file_out::AbstractString = auto_glitch_name(file_in); rng::AbstractRNG=default_rng(), nflips::Integer=10, quality::Integer=100)
+
+Glitch image from `file_in` and write the output in `file_out`.
+See other method signature for keyword usage.
+    
+"""
+function JpegGlitcher.glitch(
+    file_in::AbstractString,
+    file_out::AbstractString=auto_glitch_name(file_in);
+    rng::AbstractRNG=default_rng(),
+    n::Integer=10,
+    quality::Integer=100,
+)
+    img = FileIO.load(file_in)
+    glitched_img = glitch(img; rng, n, quality)
+    FileIO.save(file_out, glitched_img)
+end
+
+"Automatically append `_glitched` to the original file name."
+function auto_glitch_name(path::String)
+    path, ext = splitext(path)
+    string(path, "_glitched", ext)
+end
+
+
+@setup_workload begin
+    using FileIO, ImageIO
+    file = joinpath(pkgdir(JpegGlitcher), "assets", "glitched.png")
+    @compile_workload begin
+        glitch(file)
+    end
 end
 
 end

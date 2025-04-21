@@ -1,23 +1,18 @@
 name = "JpegGlitcher"
 uuid = "7e1ea31b-b9a5-4cc0-940e-7c5f7cd080d6"
-authors = [
-    "JuliaWTF, Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors",
-]
-version = "1.1.0"
+authors = ["JuliaWTF, Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors"]
+version = "1.2.0"
 
 [deps]
 JpegTurbo = "b835a17e-a41a-41e7-81f0-2f016b05efe0"
-Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-
-[weakdeps]
-ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-
-[extensions]
-JpegGlitcherImageIOExt = ["ImageIO", "FileIO"]
+ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
+PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
 FileIO = "1"
 ImageIO = "0.6"
 JpegTurbo = "0.1"
+PrecompileTools = "1"
 julia = "1.9"
