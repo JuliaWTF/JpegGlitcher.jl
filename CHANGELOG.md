@@ -18,4 +18,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fix tests
 
+## [1.1.0] - 2024-07-13
+
+### Added
+- Add option to glitch files directly
+
+### Changed
+- Update README
+- Improve tests and add test workflow
+
+### Fixed
+- Fix missing dependencies
+- Use correct test image name
+
+## [1.0.0] - 2022-11-13
+
+### Added
+- Initial release of JpegGlitcher.jl
+
 [1.2.0]: https://github.com/JuliaWTF/JpegGlitcher.jl/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/JuliaWTF/JpegGlitcher.jl/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/JuliaWTF/JpegGlitcher.jl/releases/tag/v1.0.0
