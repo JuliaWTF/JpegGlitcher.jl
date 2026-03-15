@@ -83,7 +83,7 @@ Glitch image from `file_in` and write the output in `file_out`.
 See other method signature for keyword usage.
     
 """
-function JpegGlitcher.glitch(
+function glitch(
     file_in::AbstractString,
     file_out::AbstractString=auto_glitch_name(file_in);
     rng::AbstractRNG=default_rng(),
