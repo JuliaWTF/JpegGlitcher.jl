@@ -32,11 +32,11 @@ randomly change some bytes (safe to change) of the encoded image.
 - `quality::Integer`: the encoding quality of the JPEG (lower gives worse quality).
 """
 function glitch(
-    img::AbstractMatrix;
+    img::AbstractMatrix{T};
     rng::AbstractRNG=default_rng(),
     nflips::Integer=10,
     quality::Integer=100,
-)
+) where {T}
     0 < quality <= 100 || error("quality should be between 1 and 100.")
     nflips > 0 || error("number `n` should be positive.")
     # Encode the image into a Vector{UInt8}
@@ -72,7 +72,7 @@ function glitch(
     end
     # Finally disencode the data. We disable stderr, as jpegturbo produces a lot of noise.
     redirect_stderr(devnull) do
-        jpeg_decode(data)
+        jpeg_decode(T, data)
     end
 end
 
@@ -87,12 +87,10 @@ See other method signature for keyword usage.
 function glitch(
     file_in::AbstractString,
     file_out::AbstractString=auto_glitch_name(file_in);
-    rng::AbstractRNG=default_rng(),
-    n::Integer=10,
-    quality::Integer=100,
+    kwargs...
 )
     img = FileIO.load(file_in)
-    glitched_img = glitch(img; rng, n, quality)
+    glitched_img = glitch(img; kwargs...)
     FileIO.save(file_out, glitched_img)
 end
 
