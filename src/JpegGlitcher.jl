@@ -97,7 +97,7 @@ function glitch(
         i += 1
     end
     # Finally disencode the data. We disable stderr, as jpegturbo produces a lot of noise.
-    redirect_stderr(devnull) do
+    redirect_stdio(; stdout = devnull, stderr = devnull) do
         jpeg_decode(T, data)
     end
 end
