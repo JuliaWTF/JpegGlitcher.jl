@@ -4,11 +4,12 @@ authors = ["JuliaWTF, Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributo
 version = "1.2.0"
 
 [deps]
-JpegTurbo = "b835a17e-a41a-41e7-81f0-2f016b05efe0"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
+JpegTurbo = "b835a17e-a41a-41e7-81f0-2f016b05efe0"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 FileIO = "1"

@@ -2,6 +2,7 @@ module JpegGlitcher
 
 using JpegTurbo
 using Random: AbstractRNG, default_rng
+using StatsBase: sample
 using PrecompileTools: @setup_workload, @compile_workload
 using ImageIO
 using FileIO
@@ -18,6 +19,35 @@ A JPEG image consists of a sequence of segments, each beginning with a marker, e
 
 Within the entropy-coded data, after any 0xFF byte, a 0x00 byte is inserted by the encoder before the next byte, so that there does not appear to be a marker where none is intended, preventing framing errors. Decoders must skip this 0x00 byte. This technique, called byte stuffing (see JPEG specification section F.1.2.3), is only applied to the entropy-coded data, not to marker payload data. Note however that entropy-coded data has a few markers of its own; specifically the Reset markers (0xD0 through 0xD7), which are used to isolate independent chunks of entropy-coded data to allow parallel decoding, and encoders are free to insert these Reset markers at regular intervals (although not all encoders do this).
 =#
+
+# Advance past a JPEG marker. `i` points to the marker-type byte (immediately after 0xFF).
+# Returns the updated index after skipping the full marker segment.
+function skip_marker(data::Vector{UInt8}, i::Int)
+    if data[i] ∈ NOPAYLOAD
+        i
+    elseif data[i] == 0xDD  # DRI: fixed 4-byte payload
+        i + 4
+    elseif data[i] ∈ WITH_VARSIZE
+        i + (UInt16(data[i+1]) << 8 | UInt16(data[i+2]))
+    else
+        i
+    end
+end
+
+# Count the number of mutable (non-marker) bytes in encoded JPEG data.
+function count_mutable(data::Vector{UInt8})
+    n = 0
+    i = 1
+    while i < length(data)
+        if data[i] == 0xFF
+            i = skip_marker(data, i + 1)
+        else
+            n += 1
+        end
+        i += 1
+    end
+    n
+end
 
 """
     glitch(img::AbstractMatrix; rng::AbstractRNG=default_rng(), nflips::Integer=10, quality::Integer=100)
@@ -38,37 +68,33 @@ function glitch(
     quality::Integer=100,
 ) where {T}
     0 < quality <= 100 || error("quality should be between 1 and 100.")
-    nflips > 0 || error("number `n` should be positive.")
-    # Encode the image into a Vector{UInt8}
+    nflips > 0 || error("`nflips` should be positive.")
     data = jpeg_encode(img; quality)
-    # The bytes that are not markers and can be modified.
-    mutable_bytes = sizehint!(Int[], length(data) ÷ 100) # We assume at least 1% of the bits will be markers.
-    # Iterate over the bytes.
+
+    # Pass 1: count how many bytes are safe to modify.
+    m = count_mutable(data)
+    m == 0 && error("No mutable bytes found in encoded image.")
+    nflips > m && error("`nflips` ($nflips) exceeds the number of mutable bytes ($m).")
+
+    # Sample nflips unique ranks without replacement, sorted for a single linear pass.
+    targets = sample(rng, 1:m, nflips; replace=false, ordered=true)
+
+    # Pass 2: walk the data again and flip only the chosen bytes.
+    mutable_count = 0
+    t = 1
     i = 1
     while i < length(data)
-        # 0xFF is possibly the beginning of a marker.
         if data[i] == 0xFF
-            i += 1 # We move on the next byte.
-            if data[i] ∈ NOPAYLOAD # Marker not followed by extra bites
-                nothing
-            elseif data[i] == 0xDD # 0xDD is guaranteed to be followed by 4 bytes
-                i += 4
-            elseif data[i] ∈ WITH_VARSIZE # The next two bytes indicate the size
-                # of the data contained by the marker.
-                high_byte, low_byte = data[i+1:i+2]
-                size = UInt16(high_byte) << 8 | UInt16(low_byte)
-                i += size
-            end
+            i = skip_marker(data, i + 1)
         else
-            push!(mutable_bytes, i) # In the case it's not a marker we add it to the list.
+            mutable_count += 1
+            if mutable_count == targets[t]
+                data[i] = rand(rng, 0x00:0xfe)
+                t += 1
+                t > nflips && break
+            end
         end
         i += 1
-    end
-    isempty(mutable_bytes) && error("No mutable bytes found in encoded image.")
-    # Once we completed the list of safe bytes to modify, we get to work!
-    for i = 1:nflips
-        loc = rand(rng, mutable_bytes) # Select a random byte.
-        data[loc] = rand(rng, 0x00:0xfe) # We pick a new random byte (except 0xff).
     end
     # Finally disencode the data. We disable stderr, as jpegturbo produces a lot of noise.
     redirect_stderr(devnull) do
