@@ -11,7 +11,7 @@ using ImageIO, FileIO
             img = testimage(img_name)
             # test alg runs fine
             for kw in ((;), (; quality=10), (; n=100))
-                glitched = glitch(img)
+                glitched = glitch(img; kw...)
                 @test size(img) == size(glitched)
                 @test eltype(img) == eltype(glitched)
             end

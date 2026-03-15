@@ -11,7 +11,7 @@ export glitch
 # Relevant link for markers  :https://en.wikipedia.org/wiki/JPEG#Syntax_and_structure
 const NOPAYLOAD = [0x00, 0xD8, (0xD0:0xD7)..., 0xD9]
 
-const WITH_VARSIZE = [0xD8, 0xC0, 0xC2, 0xC4, 0xDB, 0xDA, (0xE0:0xEF)..., 0xFE]
+const WITH_VARSIZE = [0xC0, 0xC2, 0xC4, 0xDB, 0xDA, (0xE0:0xEF)..., 0xFE]
 
 #= 
 A JPEG image consists of a sequence of segments, each beginning with a marker, each of which begins with a 0xFF byte, followed by a byte indicating what kind of marker it is. Some markers consist of just those two bytes; others are followed by two bytes (high then low), indicating the length of marker-specific payload data that follows. (The length includes the two bytes for the length, but not the two bytes for the marker.) Some markers are followed by entropy-coded data; the length of such a marker does not include the entropy-coded data. Note that consecutive 0xFF bytes are used as fill bytes for padding purposes, although this fill byte padding should only ever take place for markers immediately following entropy-coded scan data (see JPEG specification section B.1.1.2 and E.1.2 for details; specifically "In all cases where markers are appended after the compressed data, optional 0xFF fill bytes may precede the marker").
@@ -28,17 +28,17 @@ randomly change some bytes (safe to change) of the encoded image.
 ## Keyword arguments
 
 - `rng::AbstractRNG`: the random number generator used to select and modify bytes.
-- `n::Integer`: the number of bytes to modify.
+- `nflips::Integer`: the number of bytes to modify.
 - `quality::Integer`: the encoding quality of the JPEG (lower gives worse quality).
 """
 function glitch(
     img::AbstractMatrix;
     rng::AbstractRNG=default_rng(),
-    n::Integer=10,
+    nflips::Integer=10,
     quality::Integer=100,
 )
     0 < quality <= 100 || error("quality should be between 1 and 100.")
-    n > 0 || error("number `n` should be positive.")
+    nflips > 0 || error("number `n` should be positive.")
     # Encode the image into a Vector{UInt8}
     data = jpeg_encode(img; quality)
     # The bytes that are not markers and can be modified.
@@ -56,7 +56,7 @@ function glitch(
             elseif data[i] ∈ WITH_VARSIZE # The next two bytes indicate the size
                 # of the data contained by the marker.
                 high_byte, low_byte = data[i+1:i+2]
-                size = parse(UInt16, bitstring(high_byte) * bitstring(low_byte); base=2)
+                size = UInt16(high_byte) << 8 | UInt16(low_byte)
                 i += size
             end
         else
@@ -64,12 +64,13 @@ function glitch(
         end
         i += 1
     end
+    isempty(mutable_bytes) && error("No mutable bytes found in encoded image.")
     # Once we completed the list of safe bytes to modify, we get to work!
-    for i = 1:n
+    for i = 1:nflips
         loc = rand(rng, mutable_bytes) # Select a random byte.
         data[loc] = rand(rng, 0x00:0xfe) # We pick a new random byte (except 0xff).
     end
-    # Finally disencode the data.
+    # Finally disencode the data. We disable stderr, as jpegturbo produces a lot of noise.
     redirect_stderr(devnull) do
         jpeg_decode(data)
     end
@@ -96,7 +97,7 @@ function glitch(
 end
 
 "Automatically append `_glitched` to the original file name."
-function auto_glitch_name(path::String)
+function auto_glitch_name(path::AbstractString)
     path, ext = splitext(path)
     string(path, "_glitched", ext)
 end

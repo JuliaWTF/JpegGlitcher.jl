@@ -10,7 +10,7 @@ Here is a basic example, using the default parameters.
 
 ```julia
 using JpegGlitcher
-using RandomFileIO, TestImages
+using TestImages
 
 img = testimage("mountainstream")
 glitch(img)
